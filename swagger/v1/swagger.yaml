@@ -1,0 +1,307 @@
+---
+openapi: 3.0.1
+info:
+  title: CLEAR-ME API
+  version: v1
+securityDefinitions:
+  Bearer:
+    type: apiKey
+    name: Authorization
+    in: header
+    description: Bearer {token}
+paths:
+  "/api/v1/signup":
+    post:
+      summary: Creates a new user
+      tags:
+      - Users
+      parameters:
+        - name: username
+          in: formData
+          description: User's username
+          required: true
+          type: string
+        - name: email
+          in: formData
+          description: User's email address
+          required: true
+          type: string
+        - name: password
+          in: formData
+          description: User's password
+          required: true
+          type: string
+        - name: gender
+          in: formData
+          description: User's gender
+          required: true
+          type: string
+          enum:
+            - male
+            - female
+            - others
+        - name: date_of_birth
+          in: formData
+          description: User's date of birth
+          required: false
+          type: string
+          format: date
+      responses:
+        200:
+          description: Successful Signup
+          headers:
+            Authorization:
+              type: string
+              description: Bearer {JWT token}
+              example: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: object
+                    properties:
+                      code:
+                        type: integer
+                        example: 200
+                      message:
+                        type: string
+                        example: Signed up sucessfully.
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      username:
+                        type: string
+                      email:
+                        type: string
+                        format: email
+                      gender:
+                        type: string
+                        enum:
+                          - male
+                          - female
+                      date_of_birth:
+                        type: string
+                        format: date
+                      created_at:
+                        type: string
+                        format: date-time
+        422:
+          description: Unprocessable content. Unsuccessful signup.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                      type: object
+                      properties:
+                        code:
+                          type: integer
+                          example: 422
+                        message:
+                          type: string
+                          example: User couldn't be created successfully. Email has already been taken, Password can't be blank, Username has already been taken, Email has already been taken, and Gender can't be blank
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user:
+                  type: object
+                  properties:
+                    username:
+                      type: string
+                    email:
+                      type: string
+                    password:
+                      type: string
+                    gender:
+                      type: string
+                      enum:
+                      - male
+                      - female
+                      - others
+                    date_of_birth:
+                      type: string
+                      format: date
+              required:
+              - username
+              - email
+              - password
+              - gender
+  "/api/v1/current_user":
+    get:
+      summary: Retrieves the currently logged-in user
+      tags:
+      - Users
+      security:
+      - Bearer: []
+      responses:
+        200:
+          description: Successful. Logged-In user details retrieved.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  username:
+                    type: string
+                  email:
+                    type: string
+                  gender:
+                    type: string
+                  date_of_birth:
+                    type: string
+                    format: date
+                  created_at:
+                    type: string
+                    format: date_time
+                required:
+                - id
+                - username
+                - email
+                - gender
+                - created_at
+  
+        401:
+          description: revoked token, you need to sign in or sign up before continuing, no verification key available
+          content:
+            text/plain:
+              schema:
+                type: string
+      parameters:
+        - in: header
+          name: Authorization
+          description: Bearer token for authentication
+          required: true
+          schema:
+            type: string
+  "/api/v1/logout":
+    delete:
+      summary: Logs out the current user
+      tags:
+        - Users
+      security:
+        - Bearer: []
+      responses:
+        200:
+          description: Successful logout
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: logged out successfully
+        401:
+          description: Unauthorized. Returned when bearer token is incorrect or does not exist. 
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 401
+                  message:
+                    type: string
+                    example: Couldn't find an active session.
+      parameters:
+        - in: header
+          name: Authorization
+          description: Bearer token for authentication
+          required: true
+          schema:
+            type: string
+  "/api/v1/login":
+    post:
+      summary: Logs in a user
+      tags:
+      - Users
+      parameters:
+        - name: email
+          in: formData
+          description: User's email address
+          required: true
+          type: string
+        - name: password
+          in: formData
+          description: User's password
+          required: true
+          type: string
+      responses:
+        200:
+          description: Successful Login
+          headers:
+            Authorization:
+              type: string
+              description: Bearer {JWT token}
+              example: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: object
+                    properties:
+                      code:
+                        type: integer
+                        example: 200
+                      message:
+                        type: string
+                        example: Logged in sucessfully.
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      username:
+                        type: string
+                      email:
+                        type: string
+                        format: email
+                      gender:
+                        type: string
+                        enum:
+                          - male
+                          - female
+                      date_of_birth:
+                        type: string
+                        format: date
+                      created_at:
+                        type: string
+                        format: date-time
+        401:
+          description: Invalid email or password
+          content:
+            text/plain:
+              schema:
+                type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+              required:
+              - email
+              - password
+servers:
+- url: http://localhost:4000/
+  description: Local server
